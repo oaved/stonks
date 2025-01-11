@@ -3,7 +3,7 @@ from plotly.subplots import make_subplots
 from get_stock_data import get_stock_data
 from basic_measurements import calc_moving_average, calc_volatility, add_indicators
 
-def plot(data, ticker):
+def plot_basic_measurements(data, ticker):
     #   Initiate figure consisting two plots
     fig = make_subplots(
         rows=3, cols=1, shared_xaxes=True,
@@ -74,4 +74,4 @@ if __name__ == "__main__":
         data = calc_moving_average(data) 
         data = add_indicators(data)
         data = calc_volatility(data)
-        plot(data, ticker)
+        plot_basic_measurements(data, ticker)
