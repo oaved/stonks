@@ -2,11 +2,10 @@ import numpy as np
     
 # Goal: Get a signal for buy, hold or sell
 class NeuralNetwork:
-    def __init__(self, input_size=768, hidden_layers=[512, 512], output_size=3, learning_rate=0.5):
+    def __init__(self, input_size=768, hidden_layers=[512, 512], output_size=3):
         self.input_size = input_size
         self.hidden_layers = hidden_layers
         self.output_size = output_size
-        self.learning_rate = learning_rate
         self.weights = []
         self.biases = []
 
@@ -40,7 +39,7 @@ class NeuralNetwork:
             a = self.relu(z)
             self.activations.append(a)
 
-        return self.activations[-1]
+        return self.activations
     
     # Calculated using chainrule, doutput/dw = dz/dw*da/dz*doutput/da
     def backward(self, targets: np.ndarray):
@@ -52,7 +51,6 @@ class NeuralNetwork:
         # da / dz
         delta *= np.vectorize(self.relu_derivative)(self.activations[-1])
 
-        # Backpropagate through the layers
         for i in reversed(range(len(self.weights))):
             # dz / dw
             weight_gradients[i] = np.dot(self.activations[i].T, delta)
@@ -70,7 +68,7 @@ class NeuralNetwork:
 
 
         for i in range(len(minibatch)):
-            self.activations = self.forward(minibatch[i])
+            self.forward(minibatch[i])
 
             weight_gradients, bias_gradients = self.backward(targets[i])
 
@@ -86,10 +84,38 @@ class NeuralNetwork:
             self.weights[i] -= learning_rate * averaged_weight_gradients[i]
             self.biases[i] -= learning_rate * averaged_bias_gradients[i]
         
+    def train(self, data, targets, epochs=10, batch_size=32):
+        # The real challenge is to evaluate if the market really is bullish or bearish
+        num_examples = len(data)
+        for epoch in range(epochs):
+            permutation = np.random.permutation(num_examples)
+            shuffled_data = data[permutation]
+            shuffled_targets = targets[permutation]
+            
+            for i in range(0, num_examples, batch_size):
+                minibatch_data = shuffled_data[i:i + batch_size]
+                minibatch_targets = shuffled_targets[i:i + batch_size]
 
+                # Hardcoding learning rate to
+                # Would be cool with changing learning rate after how steep the gradient is
+                self.backpropagation(minibatch_data, minibatch_targets, learning_rate=0.01)
 
+            predictions = self.predict(data)
+            accuracy = self.evalute(predictions, targets)
+            print(f"Epoch {epoch}/{epochs}, Accuracy: {accuracy}")
 
+    def predict(self, data):
+        return self.forward(data)[-1]
+
+    def evaluate(self, predictions, targets):
+        predicted_classes = np.argmax(predictions, axis=1)
+        true_classes = np.argmax(targets, axis=1)
+
+        grades = np.where(predicted_classes == true_classes, 1, 0)
+        accuracy = np.mean(grades)
+        return accuracy
         
+
 
 def test():
     inputs = np.random.randn(1, 768)
