@@ -115,12 +115,3 @@ class NeuralNetwork:
         accuracy = np.mean(grades)
         return accuracy
         
-
-
-def test():
-    inputs = np.random.randn(1, 768)
-    myNeuralNetwork = NeuralNetwork(input_size=inputs.shape[1])
-    result = myNeuralNetwork.forward(inputs)
-    print(f"Here is the result: {result}")
-
-test()
