@@ -42,17 +42,52 @@ class NeuralNetwork:
 
         return self.activations[-1]
     
-    def backward(self, output: np.ndarray, actual_values: np.ndarray):
-        loss = (output - actual_values)**2
-        gradients = 2 * [loss * self.relu_derivative(self.activations[-1])]
+    # Calculated using chainrule, doutput/dw = dz/dw*da/dz*doutput/da
+    def backward(self, targets: np.ndarray):
+        weight_gradients = [np.zeros_like(w) for w in self.weights]
+        bias_gradients = [np.zeros_like(b) for b in self.biases]
 
-        for i in range(len(self.weights) - 1, 0, -1):
-            gradient = 2 * np.dot(gradients[0], self.weights[i].T) * self.relu_derivative(self.activations[i])
-            gradients.insert(0, gradient)
+        # error = MSE, therefore doutput/da = 2 * error
+        delta = 2 * (self.activations[-1] - targets)
+        # da / dz
+        delta *= np.vectorize(self.relu_derivative)(self.activations[-1])
+
+        # Backpropagate through the layers
+        for i in reversed(range(len(self.weights))):
+            # dz / dw
+            weight_gradients[i] = np.dot(self.activations[i].T, delta)
+            # dz / da
+            bias_gradients[i] = np.sum(delta, axis=0)
+
+            if i > 0:  # Skip for the input layer
+                delta = np.dot(delta, self.weights[i].T) * np.vectorize(self.relu_derivative)(self.activations[i])
+
+        return weight_gradients, bias_gradients
+
+    def backpropagation(self, minibatch: list, targets: np.ndarray, learning_rate: float):
+        total_weight_gradients = [np.zeros_like(w) for w in self.weights]
+        total_bias_gradients = [np.zeros_like(b) for b in self.biases]
+
+
+        for i in range(len(minibatch)):
+            self.activations = self.forward(minibatch[i])
+
+            weight_gradients, bias_gradients = self.backward(targets[i])
+
+            for j in range(len(self.weights)):
+                total_weight_gradients[j] += weight_gradients[j]
+                total_bias_gradients[j] += bias_gradients[j]
+
+        num_examples = len(minibatch)
+        averaged_weight_gradients = [wg / num_examples for wg in total_weight_gradients]
+        averaged_bias_gradients = [bg / num_examples for bg in total_bias_gradients]
 
         for i in range(len(self.weights)):
-            self.weights[i] -= self.learning_rate * np.dot(self.activations[i].T, gradients[i])
-            self.biases[i] -= self.learning_rate * np.sum(gradients[i], axis=0, keepdims=True)
+            self.weights[i] -= learning_rate * averaged_weight_gradients[i]
+            self.biases[i] -= learning_rate * averaged_bias_gradients[i]
+        
+
+
 
         
 
