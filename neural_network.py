@@ -114,4 +114,3 @@ class NeuralNetwork:
         grades = np.where(predicted_classes == true_classes, 1, 0)
         accuracy = np.mean(grades)
         return accuracy
-        
