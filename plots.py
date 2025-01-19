@@ -10,7 +10,8 @@ def basic_candlestick_plot(data, ticker):
 
     fig.update_layout(
         title=f"{ticker} Stock Analysis",
-        showlegend=True
+        showlegend=True,
+        xaxis=dict(rangeslider=dict(visible=False))
     )
 
     fig.show()
@@ -34,7 +35,7 @@ def plot_basic_measurements(data, ticker):
     fig.add_trace(go.Scatter(x=data.index, y=data["Long_MA"], mode="lines", name="Long MA"), row=1, col=1)
 
     # RSI
-    #   Cool names
+    # Cool names
     bullish = data[data["Signal"] == 1]
     bearish = data[data["Signal"] == -1]
 
