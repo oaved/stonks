@@ -103,10 +103,6 @@ class NeuralNetwork:
                 # Would be cool with changing learning rate after how steep the gradient is
                 self.backpropagation(minibatch_data, minibatch_targets, learning_rate=0.0001)
 
-            # print(f"targets: {targets}")
-            # print(f"targets[epoch]: {targets[epoch]}")
-            # if epoch == 0 or epoch == epochs:
-
             prediction = self.predict(data[epoch])
 
             accuracy = self.evaluate(prediction, targets[epoch])
